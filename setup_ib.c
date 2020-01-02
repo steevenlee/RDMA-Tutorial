@@ -172,8 +172,8 @@ int setup_ib ()
         .send_cq = ib_res.cq,
         .recv_cq = ib_res.cq,
         .cap = {
-            .max_send_wr = ib_res.dev_attr.max_qp_wr,
-            .max_recv_wr = ib_res.dev_attr.max_qp_wr,
+            .max_send_wr = 1024,
+            .max_recv_wr = 1024,
             .max_send_sge = 1,
             .max_recv_sge = 1,
         },
