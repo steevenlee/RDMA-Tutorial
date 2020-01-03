@@ -9,6 +9,8 @@ struct ConfigInfo {
 
     int  msg_size;           /* the size of each echo message */
     int  num_concurr_msgs;   /* the number of messages can be sent concurrently */
+    int  gid_index;          /* GID index of in ibv_devinfo -v -d mlx5_4 */
+    int  dev_index;          /* device index of in ibv_devinfo */
     
     char *sock_port;         /* socket port number */
     char *server_name;       /* server name */

@@ -8,7 +8,7 @@
 #include <infiniband/verbs.h>
 #include <arpa/inet.h>
 
-#define IB_MTU			IBV_MTU_4096
+#define IB_MTU			IBV_MTU_1024
 #define IB_PORT			1
 #define IB_SL			0
 #define IB_WR_ID_STOP		0xE000000000000000
@@ -28,6 +28,8 @@ static inline uint64_t ntohll (uint64_t x) {return x; }
 struct QPInfo {
     uint16_t lid;
     uint32_t qp_num;
+    union ibv_gid gid;
+    uint8_t gid_index;
 }__attribute__ ((packed));
 
 enum MsgType {
@@ -36,7 +38,7 @@ enum MsgType {
     MSG_REGULAR,
 };
 
-int modify_qp_to_rts (struct ibv_qp *qp, uint32_t qp_num, uint16_t lid);
+int modify_qp_to_rts (struct ibv_qp *qp, struct QPInfo *local, struct QPInfo *remote);
 
 int post_send (uint32_t req_size, uint32_t lkey, uint64_t wr_id, 
 	       uint32_t imm_data, struct ibv_qp *qp, char *buf);

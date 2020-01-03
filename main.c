@@ -17,20 +17,24 @@ int main (int argc, char *argv[])
 {
     int	ret = 0;
 
-    if (argc == 5) {
+    if (argc == 7) {
 	config_info.is_server	     = false;
 	config_info.server_name	     = argv[1];
 	config_info.msg_size	     = atoi (argv[2]); 
 	config_info.num_concurr_msgs = atoi (argv[3]);
 	config_info.sock_port	     = argv[4];
-    } else if (argc == 4) {
+	config_info.dev_index	     = atoi (argv[5]);
+	config_info.gid_index	     = atoi (argv[6]);
+    } else if (argc == 6) {
 	config_info.is_server	     = true;
 	config_info.msg_size	     = atoi (argv[1]); 
 	config_info.num_concurr_msgs = atoi (argv[2]);
 	config_info.sock_port	     = argv[3];
+	config_info.dev_index	     = atoi (argv[4]);
+	config_info.gid_index	     = atoi (argv[5]);
     } else {
-	printf ("Server: %s msg_size num_concurr_msgs sock_port\n", argv[0]);
-	printf ("Client: %s server_name msg_size num_concurr_msgs sock_port\n", argv[0]);
+	printf ("Server: %s msg_size num_concurr_msgs sock_port dev_index gid_index\n", argv[0]);
+	printf ("Client: %s server_name msg_size num_concurr_msgs sock_port dev_index gid_index\n", argv[0]);
 	return 0;
     }    
 

@@ -11,6 +11,7 @@ struct IBRes {
     struct ibv_qp		*qp;
     struct ibv_port_attr	 port_attr;
     struct ibv_device_attr	 dev_attr;
+    uint8_t gid_index;
 
     char   *ib_buf;
     size_t  ib_buf_size;

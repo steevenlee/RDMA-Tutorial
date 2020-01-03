@@ -31,7 +31,13 @@ int connect_qp_server ()
     /* init local qp_info */
     local_qp_info.lid	 = ib_res.port_attr.lid; 
     local_qp_info.qp_num = ib_res.qp->qp_num;
+    local_qp_info.gid_index = ib_res.gid_index;
     
+    if (local_qp_info.lid == 0 && ib_res.port_attr.link_layer == IBV_LINK_LAYER_ETHERNET) {
+        ret = ibv_query_gid(ib_res.ctx, IB_PORT, local_qp_info.gid_index, &local_qp_info.gid);
+	check (ret == 0, "failed to get gid");
+    }
+
     /* get qp_info from client */
     ret = sock_get_qp_info (peer_sockfd, &remote_qp_info);
     check (ret == 0, "Failed to get qp_info from client");
@@ -41,8 +47,7 @@ int connect_qp_server ()
     check (ret == 0, "Failed to send qp_info to client");
 
     /* change send QP state to RTS */    	
-    ret = modify_qp_to_rts (ib_res.qp, remote_qp_info.qp_num, 
-			    remote_qp_info.lid);
+    ret = modify_qp_to_rts (ib_res.qp, &local_qp_info, &remote_qp_info);
     check (ret == 0, "Failed to modify qp to rts");
 
     log (LOG_SUB_HEADER, "Start of IB Config");
@@ -87,7 +92,13 @@ int connect_qp_client ()
 
     local_qp_info.lid     = ib_res.port_attr.lid; 
     local_qp_info.qp_num  = ib_res.qp->qp_num; 
-   
+    local_qp_info.gid_index = ib_res.gid_index;
+
+    if (local_qp_info.lid == 0 && ib_res.port_attr.link_layer == IBV_LINK_LAYER_ETHERNET) {
+        ret = ibv_query_gid(ib_res.ctx, IB_PORT, local_qp_info.gid_index, &local_qp_info.gid);
+	check (ret == 0, "failed to get gid");
+    }
+
     /* send qp_info to server */    
     ret = sock_set_qp_info (peer_sockfd, &local_qp_info);
     check (ret == 0, "Failed to send qp_info to server");
@@ -97,8 +108,7 @@ int connect_qp_client ()
     check (ret == 0, "Failed to get qp_info from server");
 
     /* change QP state to RTS */    	
-    ret = modify_qp_to_rts (ib_res.qp, remote_qp_info.qp_num, 
-			    remote_qp_info.lid);
+    ret = modify_qp_to_rts (ib_res.qp, &local_qp_info, &remote_qp_info);
     check (ret == 0, "Failed to modify qp to rts");
 
     log (LOG_SUB_HEADER, "IB Config");
@@ -135,8 +145,10 @@ int setup_ib ()
     check(dev_list != NULL, "Failed to get ib device list.");
 
     /* create IB context */
-    ib_res.ctx = ibv_open_device(*dev_list);
+    ib_res.ctx = ibv_open_device(dev_list[config_info.dev_index]);
     check(ib_res.ctx != NULL, "Failed to open ib device.");
+
+    printf("using first device, name: %s, dev_name: %s\n", ib_res.ctx->device->name, ib_res.ctx->device->dev_name);
 
     /* allocate protection domain */
     ib_res.pd = ibv_alloc_pd(ib_res.ctx);
@@ -146,6 +158,10 @@ int setup_ib ()
     ret = ibv_query_port(ib_res.ctx, IB_PORT, &ib_res.port_attr);
     check(ret == 0, "Failed to query IB port information.");
     
+    printf("number of gid in device: %d\n", ib_res.port_attr.gid_tbl_len);
+    printf("max mtu: %d\n", ib_res.port_attr.max_mtu);
+    ib_res.gid_index = config_info.gid_index;
+
     /* register mr */
     ib_res.ib_buf_size = config_info.msg_size * config_info.num_concurr_msgs;
     ib_res.ib_buf      = (char *) memalign (4096, ib_res.ib_buf_size);
